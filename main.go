@@ -1,12 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Pokedex > ")
+		scanner.Scan()
+		input := scanner.Text()
+		words := cleanInput(input)
+		fmt.Printf("Your command was: %s\n", words[0])
+
+	}
 }
 
 // split the user's input into "words" based on whitespace. It should also lowercase the input and trim any leading or trailing whitespace.

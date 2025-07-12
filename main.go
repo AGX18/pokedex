@@ -38,16 +38,23 @@ func init() {
 			description: "Fetches the previous map of locations",
 			callback:    commandMapBack,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Explore a specific location area by name",
+			callback:    commandExplore,
+		},
 	}
 }
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	config := Config{
-		NextURL: "https://pokeapi.co/api/v2/location-area/?limit=20&offset=0",
-		PrevURL: "",
-		Offset:  0,  // Offset for pagination
-		Limit:   20, // Default limit for pagination
+		NextURL:  "https://pokeapi.co/api/v2/location-area/?limit=20&offset=0",
+		PrevURL:  "",
+		Offset:   0,  // Offset for pagination
+		Limit:    20, // Default limit for pagination
+		AreaName: "", // For searching by area name
+		AreaID:   0,  // For searching by area ID
 	}
 	for {
 		fmt.Print("Pokedex > ")
@@ -58,6 +65,13 @@ func main() {
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
+		}
+		if command.name == "explore" {
+			if len(words) < 2 {
+				fmt.Println("Please provide an area name or ID to explore.")
+				continue
+			}
+			config.AreaName = words[1] // Set the area name from the input
 		}
 		err := command.callback(&config) // Call the command's callback function
 		if err != nil {
@@ -198,12 +212,63 @@ func displayLocationAreas(locationAreas []LocationAreaSummary) {
 	}
 }
 
+func commandExplore(config *Config) error {
+	if config.AreaName == "" && config.AreaID == 0 {
+		fmt.Println("Please provide an area name or ID to explore.")
+		return nil
+	}
+
+	var url string
+	if config.AreaName != "" {
+		url = fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", config.AreaName)
+		fmt.Printf("Exploring %s...\n", config.AreaName)
+	} else {
+		url = fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%d", config.AreaID)
+	}
+	// Check if the URL is cached
+	cachedData, found := cache.Get(url)
+	var area LocationArea
+	if found {
+		err := json.Unmarshal(cachedData, &area)
+		if err != nil {
+			return fmt.Errorf("error decoding cached JSON: %w", err)
+		}
+		fmt.Printf("Using cached data for %s\n", area.Name)
+	} else {
+		res, err := http.Get(url)
+		if err != nil {
+			return fmt.Errorf("error fetching location area: %w", err)
+		}
+		defer res.Body.Close()
+
+		err = json.NewDecoder(res.Body).Decode(&area)
+		if err != nil {
+			return fmt.Errorf("error decoding JSON: %w", err)
+		}
+		data, err := json.Marshal(area)
+		if err != nil {
+			return fmt.Errorf("error encoding JSON for cache: %w", err)
+		}
+		cache.Add(url, data)
+	}
+
+	// Cache the response
+
+	fmt.Printf("Found Pokemon:\n")
+	for _, encounter := range area.PokemonEncounters {
+		fmt.Printf("- %s\n", encounter.Pokemon.Name)
+	}
+	return nil
+}
+
 type Config struct {
 	// Add configuration fields as needed
-	NextURL string
-	PrevURL string
-	Offset  int
-	Limit   int
+	NextURL  string
+	PrevURL  string
+	Offset   int
+	Limit    int
+	AreaName string // For searching by area name
+	AreaID   int    // For searching by area ID
 }
 
 type LocationAreaListResponse struct {

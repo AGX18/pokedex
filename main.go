@@ -261,78 +261,8 @@ func commandExplore(config *Config) error {
 	return nil
 }
 
-type Config struct {
-	// Add configuration fields as needed
-	NextURL  string
-	PrevURL  string
-	Offset   int
-	Limit    int
-	AreaName string // For searching by area name
-	AreaID   int    // For searching by area ID
-}
+func commandCatch(config *Config) error {
+	fmt.Printf("Throwing a Pokeball at %s...\n", config.PokemonName)
 
-type LocationAreaListResponse struct {
-	Count    int                   `json:"count"`
-	Next     *string               `json:"next"`
-	Previous *string               `json:"previous"`
-	Results  []LocationAreaSummary `json:"results"`
-}
-
-// For the simple list items
-type LocationAreaSummary struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
-}
-
-type LocationArea struct {
-	ID                   int    `json:"id"`
-	Name                 string `json:"name"`
-	GameIndex            int    `json:"game_index"`
-	EncounterMethodRates []struct {
-		EncounterMethod struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"encounter_method"`
-		VersionDetails []struct {
-			Rate    int `json:"rate"`
-			Version struct {
-				Name string `json:"name"`
-				URL  string `json:"url"`
-			} `json:"version"`
-		} `json:"version_details"`
-	} `json:"encounter_method_rates"`
-	Location struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"location"`
-	Names []struct {
-		Name     string `json:"name"`
-		Language struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"language"`
-	} `json:"names"`
-	PokemonEncounters []struct {
-		Pokemon struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"pokemon"`
-		VersionDetails []struct {
-			Version struct {
-				Name string `json:"name"`
-				URL  string `json:"url"`
-			} `json:"version"`
-			MaxChance        int `json:"max_chance"`
-			EncounterDetails []struct {
-				MinLevel        int   `json:"min_level"`
-				MaxLevel        int   `json:"max_level"`
-				ConditionValues []any `json:"condition_values"`
-				Chance          int   `json:"chance"`
-				Method          struct {
-					Name string `json:"name"`
-					URL  string `json:"url"`
-				} `json:"method"`
-			} `json:"encounter_details"`
-		} `json:"version_details"`
-	} `json:"pokemon_encounters"`
+	return nil
 }

@@ -1,6 +1,16 @@
 # Pokedex 
 Pokedex  in a command-line REPL. used the incredible PokéAPI to fetch all of the data using GET requests. A Pokedex is just a make-believe device that lets us look up information about Pokemon - things like their name, type, and stats.
 
+## Commands
+- exit: Exit the Pokedex
+- help: Displays a help message
+- map: Fetches the map of locations
+- mapb: Fetches the previous map of locations
+- explore: Explore a specific location area by name
+- catch: Catch a specific Pokemon by name
+- inspect: Inspect a specific Pokemon by name
+- pokedex: Display all caught Pokemon
+
 ## Ideas for Extending the Project
 - [ ] Update the CLI to support the "up" arrow to cycle through previous commands
 - [ ] Simulate battles between pokemon

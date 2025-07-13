@@ -49,6 +49,16 @@ func init() {
 			description: "Catch a specific Pokemon by name",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a specific Pokemon by name",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Display all caught Pokemon",
+			callback:    commandPokedex,
+		},
 	}
 }
 
@@ -80,9 +90,9 @@ func main() {
 				continue
 			}
 			config.AreaName = words[1] // Set the area name from the input
-		} else if command.name == "catch" {
+		} else if command.name == "catch" || command.name == "inspect" {
 			if len(words) < 2 {
-				fmt.Println("Please provide a Pokemon name to catch.")
+				fmt.Println("Please provide a Pokemon name.")
 				continue
 			}
 			config.PokemonName = words[1] // Set the Pokemon name from the input
@@ -297,6 +307,7 @@ func commandCatch(config *Config) error {
 
 	if CatchProbability >= 5 {
 		fmt.Printf("Caught %s!\n", pokemon.Name)
+		fmt.Println("You may now inspect it with the inspect command.")
 		config.Pokedex[pokemon.Name] = pokemon
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon.Name)

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"strings"
@@ -43,18 +44,25 @@ func init() {
 			description: "Explore a specific location area by name",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a specific Pokemon by name",
+			callback:    commandCatch,
+		},
 	}
 }
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	config := Config{
-		NextURL:  "https://pokeapi.co/api/v2/location-area/?limit=20&offset=0",
-		PrevURL:  "",
-		Offset:   0,  // Offset for pagination
-		Limit:    20, // Default limit for pagination
-		AreaName: "", // For searching by area name
-		AreaID:   0,  // For searching by area ID
+		NextURL:     "https://pokeapi.co/api/v2/location-area/?limit=20&offset=0",
+		PrevURL:     "",
+		Offset:      0,  // Offset for pagination
+		Limit:       20, // Default limit for pagination
+		AreaName:    "", // For searching by area name
+		AreaID:      0,  // For searching by area ID
+		Pokedex:     make(map[string]Pokemon),
+		PokemonName: "", // For catching a specific Pokemon
 	}
 	for {
 		fmt.Print("Pokedex > ")
@@ -72,7 +80,17 @@ func main() {
 				continue
 			}
 			config.AreaName = words[1] // Set the area name from the input
+		} else if command.name == "catch" {
+			if len(words) < 2 {
+				fmt.Println("Please provide a Pokemon name to catch.")
+				continue
+			}
+			config.PokemonName = words[1] // Set the Pokemon name from the input
+		} else {
+			config.AreaName = ""    // Reset area name for other commands
+			config.PokemonName = "" // Reset Pokemon name for other commands
 		}
+		// Execute the command callback
 		err := command.callback(&config) // Call the command's callback function
 		if err != nil {
 			fmt.Println("Error:", err)
@@ -262,7 +280,66 @@ func commandExplore(config *Config) error {
 }
 
 func commandCatch(config *Config) error {
+	if config.PokemonName == "" {
+		fmt.Println("Please provide a Pokemon name to catch.")
+		return nil
+	}
 	fmt.Printf("Throwing a Pokeball at %s...\n", config.PokemonName)
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/pokemon/%s", config.PokemonName)
+	// Check if the URL is cached
+	var pokemon Pokemon
+	err := GetWithCache(url, cache, &pokemon)
+	if err != nil {
+		return err
+	}
 
+	CatchProbability := catchProbability(pokemon.BaseExperience)
+
+	if CatchProbability >= 5 {
+		fmt.Printf("Caught %s!\n", pokemon.Name)
+		config.Pokedex[pokemon.Name] = pokemon
+	} else {
+		fmt.Printf("%s escaped!\n", pokemon.Name)
+	}
+
+	return nil
+}
+
+func catchProbability(max int) int {
+	if max <= 1 {
+		return 0
+	}
+	factor := 1.0 / (1 + float64(max)/10.0) // decay function
+	return int(float64(max) * rand.Float64() * factor)
+}
+
+func GetWithCache[T any](url string, cache *pokecache.Cache, target *T) error {
+	cachedData, found := cache.Get(url)
+	if found {
+		err := json.Unmarshal(cachedData, target)
+		if err != nil {
+			return fmt.Errorf("error decoding cached JSON: %w", err)
+		}
+		return nil
+	}
+
+	// Fetch from HTTP if not in cache
+	res, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("error fetching data from %s: %w", url, err)
+	}
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(target)
+	if err != nil {
+		return fmt.Errorf("error decoding JSON: %w", err)
+	}
+
+	data, err := json.Marshal(target)
+	if err != nil {
+		return fmt.Errorf("error encoding JSON for cache: %w", err)
+	}
+
+	cache.Add(url, data)
 	return nil
 }

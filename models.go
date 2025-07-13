@@ -1,9 +1,5 @@
 package main
 
-type Pokedex struct {
-	CaughtPokemon map[string]Pokemon
-}
-
 type Config struct {
 	// Add configuration fields as needed
 	NextURL     string
@@ -13,6 +9,7 @@ type Config struct {
 	AreaName    string // For searching by area name
 	AreaID      int    // For searching by area ID
 	PokemonName string // For searching by Pokemon name
+	Pokedex     map[string]Pokemon
 }
 
 type LocationAreaListResponse struct {

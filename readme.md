@@ -1,7 +1,14 @@
-# Pokedex 
-Pokedex  in a command-line REPL. used the incredible PokéAPI to fetch all of the data using GET requests. A Pokedex is just a make-believe device that lets us look up information about Pokemon - things like their name, type, and stats.
+# Pokedex CLI 
+A command-line Pokedex written in Go. This tool interacts with the public [PokeAPI](https://pokeapi.co/) to fetch Pokémon data and caches results locally to reduce redundant API calls.
 
-## Commands
+## Features
+
+- Search and explore Pokémon regions, locations, and Pokémon entries.
+- In-memory caching with expiration to optimize API usage.
+- Command-line interface with basic commands like `map`, `explore`, and `inspect`.
+- Concurrent-safe cache using goroutines and `sync.RWMutex`.
+
+## Available Commands
 - exit: Exit the Pokedex
 - help: Displays a help message
 - map: Fetches the map of locations
@@ -11,7 +18,26 @@ Pokedex  in a command-line REPL. used the incredible PokéAPI to fetch all of th
 - inspect: Inspect a specific Pokemon by name
 - pokedex: Display all caught Pokemon
 
-## Ideas for Extending the Project
+
+## Getting Started
+
+### Prerequisites
+- Go 1.20+
+
+### Run the CLI
+```bash
+go run main.go
+```
+
+## Testing
+The caching layer is unit-tested using Go’s built-in testing package. Other components were tested manually by interacting with the CLI and observing responses.
+
+## Technologies Used
+- Go (Golang)
+- RESTful API (PokeAPI)
+- Concurrency primitives (goroutines, RWMutex)
+
+## Upcoming Features
 - [ ] Update the CLI to support the "up" arrow to cycle through previous commands
 - [ ] Simulate battles between pokemon
 - [ ] Add more unit tests
